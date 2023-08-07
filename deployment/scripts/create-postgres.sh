@@ -1,7 +1,7 @@
 NAMESPACE=$1
 
 
-FILE_PATH=app-${NAMESPACE}/postgres.yaml
+FILE_PATH=deployment/app-${NAMESPACE}/postgres.yaml
 
 
 cp deployment/templates/postgres.yaml $FILE_PATH
