@@ -1,0 +1,25 @@
+name: AI Build
+
+on:
+  # run it on push to the staging repository branch
+  push:
+    branches:
+      - master
+    paths:
+      - "ai/**"
+
+jobs:
+  build-ai:
+    uses: ./.github/workflows/build-and-deploy-ai.yml
+    with:
+      context: ./ai
+      image-name: ai
+      deployment-name: ai-deployment
+      username: ${{ github.actor }}
+      env: prod
+    secrets:
+      GHCR_PAT: ${{ secrets.GHCR_PAT }}
+      GCP_ACTIONS_SA: ${{ secrets.GCP_ACTIONS_SA }}
+      GCP_CLUSTER_NAME_PROD: ${{ secrets.GCP_CLUSTER_NAME_PROD }}
+      GCP_CLUSTER_NAME_DEV: ${{ secrets.GCP_CLUSTER_NAME_DEV }}
+      GCP_PROJECT: ${{ secrets.GCP_PROJECT }}

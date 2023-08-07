@@ -1,0 +1,104 @@
+name: Build and Deploy
+
+on:
+  workflow_call:
+    inputs:
+      username:
+        required: true
+        type: string
+      context:
+        required: true
+        type: string
+      deployment-name:
+        required: true
+        type: string
+      image-name:
+        required: true
+        type: string
+      env:
+        required: true
+        type: string
+    secrets:
+      GHCR_PAT:
+        required: true
+      GCP_ACTIONS_SA:
+        required: true
+      GCP_CLUSTER_NAME_PROD:
+        required: true
+      GCP_CLUSTER_NAME_DEV:
+        required: true
+      GCP_PROJECT:
+        required: true
+
+env:
+  zone: europe-west2
+
+jobs:
+  # define job to build and publish conatiner image
+  build-and-deploy:
+    name: Build Container image and push to repositories
+    # run only when code is compiling and tests are passing
+    runs-on: ubuntu-latest
+
+    # steps to perform in job
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Declare image-tag var
+        id: image-tag
+        shell: bash
+        run: |
+          echo "IMAGE_TAG=ghcr.io/digitalproductschool/${{ github.event.repository.name }}/${{ inputs.image-name }}:$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      # setup pack
+      - id: setup-pack
+        uses: buildpacks/github-actions/setup-pack@v4.4.0
+
+      - name: Login to Github Packages
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ inputs.username }}
+          password: ${{ secrets.GHCR_PAT }}
+
+      - name: Build image and push to GitHub Container Registry
+        id: package
+        run: |
+          #!/usr/bin/env bash
+          pack build --path ${CONTEXT} --builder paketobuildpacks/builder:base --publish ${REPO}
+        shell: bash
+        env:
+          # image name
+          REPO: ${{ steps.image-tag.outputs.IMAGE_TAG }}
+          # relative path to the place where source code is located
+          CONTEXT: ${{ inputs.context }}
+
+      - name: Update deployment file
+        run: sed -i 's|<IMAGE>|${{ steps.image-tag.outputs.IMAGE_TAG }}|' $GITHUB_WORKSPACE/${{ inputs.context }}/deployment.yaml
+
+      - uses: google-github-actions/setup-gcloud@94337306dda8180d967a56932ceb4ddcf01edae7
+        with:
+          service_account_key: ${{ secrets.GCP_ACTIONS_SA }}
+          project_id: ${{ secrets.GCP_PROJECT }}
+
+      # Get the GKE prod credentials so we can deploy to the cluster
+      - uses: google-github-actions/get-gke-credentials@fb08709ba27618c31c09e014e1d8364b02e5042e
+        if: inputs.env == 'prod'
+        with:
+          cluster_name: ${{ secrets.GCP_CLUSTER_NAME_PROD }}
+          location: ${{ env.zone }}
+          credentials: ${{ secrets.GCP_ACTIONS_SA }}
+
+      # Get the GKE dev credentials so we can deploy to the cluster
+      - uses: google-github-actions/get-gke-credentials@fb08709ba27618c31c09e014e1d8364b02e5042e
+        if: inputs.env == 'dev'
+        with:
+          cluster_name: ${{ secrets.GCP_CLUSTER_NAME_DEV }}
+          location: ${{ env.zone }}
+          credentials: ${{ secrets.GCP_ACTIONS_SA }}
+
+      - name: Kubectl apply
+        run: kubectl apply -n ${{ github.event.repository.name }} -f ${{ inputs.context }}/deployment.yaml
+
+      - name: Kubectl rollout
+        run: kubectl rollout status -n ${{ github.event.repository.name }} deployment/${{ inputs.deployment-name }}

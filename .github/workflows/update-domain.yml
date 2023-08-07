@@ -1,0 +1,237 @@
+name: Update domain
+
+on:
+  workflow_dispatch:
+    inputs:
+      subdomain:
+        description: "Your desired domain"
+        required: true
+        default: "example.dpschool.app"
+      prev-subdomain:
+        description: "Your previous domain"
+        required: true
+        default: "example.dpschool.app"
+    secrets:
+      GCP_ACTIONS_SA:
+        required: true
+      GCP_CLUSTER_NAME_PROD:
+        required: true
+      GCP_CLUSTER_NAME_DEV:
+        required: true
+      GCP_PROJECT:
+        required: true
+      TF_DNS_SA:
+        required: true
+env:
+  zone: europe-west2
+
+jobs:
+# Check if subdomain already exists
+  check-subdomain:
+    name: Check if the subdomain already exists
+    runs-on: ubuntu-latest
+    outputs:
+      check-status: ${{ steps.check.outputs.SUB_EXISTS }}
+    steps:
+      - uses: google-github-actions/setup-gcloud@94337306dda8180d967a56932ceb4ddcf01edae7
+        with:
+          service_account_key: ${{ secrets.TF_DNS_SA }}
+          project_id: "dps-infrastructure"
+
+      - name: Check if subdomain already exists 
+        id: check
+        shell: bash
+        run: |
+          if gcloud dns record-sets list --zone=dpschool-app | grep ${{ inputs.subdomain }} ; then
+            echo "SUB_EXISTS=true" >> $GITHUB_OUTPUT
+            echo " 🚨 Domain already exists, please think about another one"
+            exit 1
+          else
+            echo "SUB_EXISTS=false" >> $GITHUB_OUTPUT
+          fi
+
+  check-prev-subdomain:
+    name: Check if the previous subdomain exists
+    runs-on: ubuntu-latest
+    outputs:
+      check-status-prev: ${{ steps.check.outputs.SUB_PREV_EXISTS }}
+    steps:
+      - uses: google-github-actions/setup-gcloud@94337306dda8180d967a56932ceb4ddcf01edae7
+        with:
+          service_account_key: ${{ secrets.TF_DNS_SA }}
+          project_id: "dps-infrastructure"
+
+      - name: Check if subdomain already exists 
+        id: check
+        shell: bash
+        run: |
+          if gcloud dns record-sets list --zone=dpschool-app | grep ${{ inputs.prev-subdomain }} ; then
+            echo "SUB_PREV_EXISTS=true" >> $GITHUB_OUTPUT
+          else
+            echo "SUB_PREV_EXISTS=false" >> $GITHUB_OUTPUT
+            echo " 🚨 Your previous domain does not exist, please check if it's correct"
+            exit 1
+          fi
+
+  update-domain:
+    name: Update domain
+    needs: [ check-subdomain, check-prev-subdomain]
+    if: needs.check-subdomain.outputs.check-status == 'false' && needs.check-prev-subdomain.outputs.check-status-prev == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/setup-gcloud@94337306dda8180d967a56932ceb4ddcf01edae7
+        with:
+          service_account_key: ${{ secrets.TF_DNS_SA }}
+          project_id: "dps-infrastructure"
+
+      - name: Get IP addr of previous subdomain and then delete the subdomain
+        id: ip-prod-subdomain
+        run: |
+          echo "IP_PROD_SUB=$(gcloud dns record-sets describe ${{ inputs.prev-subdomain }} --type=A --zone=dpschool-app | grep ${{ inputs.prev-subdomain }} | awk '{print $4}')" >> $GITHUB_OUTPUT
+          gcloud dns record-sets delete ${{ inputs.prev-subdomain }} --type=A --zone=dpschool-app
+      
+      - name: Get IP addr of previous dev subdomain and then delete the subdomain
+        id: ip-dev-subdomain
+        run: |
+          echo "IP_DEV_SUB=$(gcloud dns record-sets describe dev.${{ inputs.prev-subdomain }} --type=A --zone=dpschool-app | grep dev.${{ inputs.prev-subdomain }} | awk '{print $4}')" >> $GITHUB_OUTPUT
+          gcloud dns record-sets delete dev.${{ inputs.prev-subdomain }} --type=A --zone=dpschool-app
+
+      - name: Create a new ones
+        run: |
+          gcloud dns record-sets create ${{ inputs.subdomain }} --rrdatas=${{ steps.ip-prod-subdomain.outputs.IP_PROD_SUB }} --type=A --zone=dpschool-app --ttl=30
+          gcloud dns record-sets create dev.${{ inputs.subdomain }} --rrdatas=${{ steps.ip-dev-subdomain.outputs.IP_DEV_SUB }} --type=A --zone=dpschool-app --ttl=30
+  
+  update-ingress-prod:
+    name: Update prod ingress
+    needs: update-domain
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - uses: google-github-actions/setup-gcloud@94337306dda8180d967a56932ceb4ddcf01edae7
+        with:
+          service_account_key: ${{ secrets.GCP_ACTIONS_SA }}
+          project_id: ${{ secrets.GCP_PROJECT }}
+      
+      # Connect to prod cluster
+      - uses: google-github-actions/get-gke-credentials@fb08709ba27618c31c09e014e1d8364b02e5042e
+        with:
+          cluster_name: ${{ secrets.GCP_CLUSTER_NAME_PROD }}
+          location: ${{ env.zone }}
+          credentials: ${{ secrets.GCP_ACTIONS_SA }}
+      
+      - name: Extract subdomain
+        id: extracted-subdomain
+        run: |
+          echo "EXTRACT_SUB=$(echo ${{ inputs.subdomain }} | cut -d. -f1)" >> $GITHUB_OUTPUT
+      
+      - name: Update ingress file for frontend
+        env:
+          context: ./frontend
+        run: |
+          sed -i 's|<SUBDOMAIN>|${{ steps.extracted-subdomain.outputs.EXTRACT_SUB }}|' $GITHUB_WORKSPACE/$context/ingress.yaml
+          sed -i 's|<ENV>|prod|' $GITHUB_WORKSPACE/$context/ingress.yaml
+
+
+      - name: Update ingress file for backend
+        env:
+          context: ./backend
+        run: |
+          sed -i 's|<SUBDOMAIN>|${{ steps.extracted-subdomain.outputs.EXTRACT_SUB }}|' $GITHUB_WORKSPACE/$context/ingress.yaml
+          sed -i 's|<ENV>|prod|' $GITHUB_WORKSPACE/$context/ingress.yaml
+
+      - name: Update ingress file for ai
+        env:
+          context: ./ai
+        run: |
+          sed -i 's|<SUBDOMAIN>|${{ steps.extracted-subdomain.outputs.EXTRACT_SUB }}|' $GITHUB_WORKSPACE/$context/ingress.yaml
+          sed -i 's|<ENV>|prod|' $GITHUB_WORKSPACE/$context/ingress.yaml
+
+      - name: Kubectl apply
+        env:
+          context: ./frontend
+        run: kubectl apply -n ${{ github.event.repository.name }} -f $context/ingress.yaml
+      
+      - name: Kubectl apply backend
+        env:
+          context: ./backend
+        run: kubectl apply -n ${{ github.event.repository.name }} -f $context/ingress.yaml
+
+      - name: Kubectl apply ai 
+        env:
+          context: ./ai
+        run: kubectl apply -n ${{ github.event.repository.name }} -f $context/ingress.yaml
+
+      - name: get Host name
+        id: host
+        shell: bash
+        run: |
+          echo "🎉 your hostname is :  $(kubectl get ingress ${{ steps.extracted-subdomain.outputs.EXTRACT_SUB }} -n ${{ github.event.repository.name }} -o jsonpath="{.spec.rules[0].host}")"
+  
+  update-ingress-dev:
+    name: Update dev ingress
+    needs: update-domain
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - uses: google-github-actions/setup-gcloud@94337306dda8180d967a56932ceb4ddcf01edae7
+        with:
+          service_account_key: ${{ secrets.GCP_ACTIONS_SA }}
+          project_id: ${{ secrets.GCP_PROJECT }}
+      
+      # Connect to dev cluster
+      - uses: google-github-actions/get-gke-credentials@fb08709ba27618c31c09e014e1d8364b02e5042e
+        with:
+          cluster_name: ${{ secrets.GCP_CLUSTER_NAME_DEV }}
+          location: ${{ env.zone }}
+          credentials: ${{ secrets.GCP_ACTIONS_SA }}
+
+      - name: Extract subdomain
+        id: extracted-subdomain
+        run: |
+          echo "EXTRACT_SUB=$(echo ${{ inputs.subdomain }} | cut -d. -f1)" >> $GITHUB_OUTPUT
+      
+      - name: Update ingress file for frontend
+        env:
+          context: ./frontend
+        run: |
+          sed -i 's|<SUBDOMAIN>|dev.${{ steps.extracted-subdomain.outputs.EXTRACT_SUB }}|' $GITHUB_WORKSPACE/$context/ingress.yaml
+          sed -i 's|<ENV>|dev|' $GITHUB_WORKSPACE/$context/ingress.yaml
+
+      - name: Update ingress file for backend
+        env:
+          context: ./backend
+        run: |
+          sed -i 's|<SUBDOMAIN>|dev.${{ steps.extracted-subdomain.outputs.EXTRACT_SUB }}|' $GITHUB_WORKSPACE/$context/ingress.yaml
+          sed -i 's|<ENV>|dev|' $GITHUB_WORKSPACE/$context/ingress.yaml
+      - name: Update ingress file for ai
+        env:
+          context: ./ai
+        run: |
+          sed -i 's|<SUBDOMAIN>|dev.${{ steps.extracted-subdomain.outputs.EXTRACT_SUB }}|' $GITHUB_WORKSPACE/$context/ingress.yaml
+          sed -i 's|<ENV>|dev|' $GITHUB_WORKSPACE/$context/ingress.yaml
+
+      - name: Kubectl apply
+        env:
+          context: ./frontend
+        run: kubectl apply -n ${{ github.event.repository.name }} -f $context/ingress.yaml
+      
+      - name: Kubectl apply backend
+        env:
+          context: ./backend
+        run: kubectl apply -n ${{ github.event.repository.name }} -f $context/ingress.yaml
+
+      - name: Kubectl apply ai 
+        env:
+          context: ./ai
+        run: kubectl apply -n ${{ github.event.repository.name }} -f $context/ingress.yaml
+
+      - name: get Host name
+        id: host
+        shell: bash
+        run: |
+          echo "🎉 your hostname is :  $(kubectl get ingress dev.${{ steps.extracted-subdomain.outputs.EXTRACT_SUB }} -n ${{ github.event.repository.name }} -o jsonpath="{.spec.rules[0].host}")"
+      
