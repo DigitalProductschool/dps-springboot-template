@@ -1,0 +1,13 @@
+apiVersion: dps.cluster/v1alpha1
+kind: SQLClaim
+metadata:
+  name: postgres-db
+  namespace: NAMESPACE
+spec:
+  id: postgres-db
+  compositionSelector:
+    matchLabels:
+      provider: local-k8s
+      db: postgresql
+  parameters:
+    version: "12.8.0"
