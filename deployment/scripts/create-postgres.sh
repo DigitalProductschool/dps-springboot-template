@@ -1,5 +1,5 @@
 NAMESPACE=$1
-CLUSTERNAME=$2
+
 
 FILE_PATH=app-${NAMESPACE}/postgres.yaml
 
