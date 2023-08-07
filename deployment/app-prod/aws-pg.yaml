@@ -6,7 +6,7 @@ spec:
   id: dps-template-prod-pg
   compositionSelector:
     matchLabels:
-      provider: aws
+      provider: aws-official
       db: postgresql
   parameters:
     version: "15.3"
