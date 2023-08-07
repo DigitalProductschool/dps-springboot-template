@@ -6,10 +6,10 @@ spec:
   id: NAME
   compositionSelector:
     matchLabels:
-      provider: aws
+      provider: PROVIDER
       db: postgresql
   parameters:
-    version: "13.4"
-    size: small
+    version: VERSION
+    size: SIZE
   writeConnectionSecretToRef:
     name: NAME
