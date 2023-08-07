@@ -6,11 +6,10 @@ spec:
   id: NAME
   compositionSelector:
     matchLabels:
-      provider: local-k8s
+      provider: aws
       db: postgresql
   parameters:
     version: "13.4"
     size: small
-    namespace: NAMESPACE
   writeConnectionSecretToRef:
     name: NAME
