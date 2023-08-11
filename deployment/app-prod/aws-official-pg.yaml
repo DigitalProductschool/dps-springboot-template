@@ -12,5 +12,3 @@ spec:
   parameters:
     version: "15.3"
     size: small
-  writeConnectionSecretToRef:
-    name: dps-template-pg
