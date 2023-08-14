@@ -8,7 +8,7 @@ on:
       provider:
         required: true
         description: "The Cloud Provider"
-        default: aws
+        default: aws-official
       version:
         required: true
         description: "The postgres version"
