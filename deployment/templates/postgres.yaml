@@ -12,5 +12,3 @@ spec:
   parameters:
     version: VERSION
     size: SIZE
-  writeConnectionSecretToRef:
-    name: NAME
