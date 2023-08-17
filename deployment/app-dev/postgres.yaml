@@ -127,11 +127,11 @@ spec:
       name: my-db
     vpcSecurityGroupIDRefs:
     - name: my-db
-    dbInstanceClass: db.m5.large
+    instanceClass: db.m5.large
     masterUsername: masteruser
     engine: postgres
     engineVersion: "14.1"
-    skipFinalSnapshotBeforeDeletion: true
+    skipFinalSnapshot: true
     publiclyAccessible: true
     allocatedStorage: 200
   writeConnectionSecretToRef:
