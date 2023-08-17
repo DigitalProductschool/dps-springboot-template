@@ -1,15 +1,4 @@
 ---
-
-apiVersion: v1
-kind: Secret
-metadata:
-  name: NAME
-data:
-  password: PASS
-
-
-
----
 apiVersion: dps.cluster/v1alpha1
 kind: SQLClaim
 metadata:
