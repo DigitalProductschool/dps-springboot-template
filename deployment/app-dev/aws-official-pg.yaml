@@ -1,0 +1,16 @@
+apiVersion: dps.cluster/v1alpha1
+kind: SQLClaim
+metadata:
+  name: dps-template-pg-dev
+  namespace: dev
+spec:
+  id: dps-template-pg-dev
+  compositionSelector:
+    matchLabels:
+      provider: aws-official
+      db: postgresql
+  parameters:
+    version: "15.3"
+    size: small
+  writeConnectionSecretToRef:
+    name: dps-template-pg-dev
