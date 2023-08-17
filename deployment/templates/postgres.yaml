@@ -2,7 +2,6 @@ apiVersion: dps.cluster/v1alpha1
 kind: SQLClaim
 metadata:
   name: NAME
-  namespace: ENV
 spec:
   id: NAME
   compositionSelector:
