@@ -1,0 +1,13 @@
+apiVersion: dps.cluster/v1alpha1
+kind: SQLClaim
+metadata:
+  name: my-db-prod
+spec:
+  id: my-db-prod
+  compositionSelector:
+    matchLabels:
+      provider: aws-official
+      db: postgresql
+  parameters:
+    version: "15.3"
+    size: small
