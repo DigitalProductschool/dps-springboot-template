@@ -1,4 +1,4 @@
-name: Create postgres
+name: Create postgreSQL instance
 on:
   workflow_dispatch:
     inputs:
@@ -17,6 +17,9 @@ on:
         required: true
         description: "The postgres size"
         default: small
+      account:
+        required: true
+        description: "The team's account"
 env:
   REPO_NAME: ${{ github.event.repository.name }}
         
@@ -31,7 +34,7 @@ jobs:
       - name: Create postgres
         run: |
           chmod +x deployment/scripts/create-postgres.sh
-          ./deployment/scripts/create-postgres.sh ${{ inputs.env }} ${{ env.REPO_NAME }} ${{ inputs.provider }} ${{ inputs.version }} ${{ inputs.size }}
+          ./deployment/scripts/create-postgres.sh ${{ inputs.env }} ${{ env.REPO_NAME }} ${{ inputs.provider }} ${{ inputs.version }} ${{ inputs.size }} ${{ inputs.account }}
       - name: Commit changes
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
