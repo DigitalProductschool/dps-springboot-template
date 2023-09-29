@@ -8,6 +8,7 @@ ACCOUNT=$6
 FILE_PATH=deployment/app-${ENV}/${PROVIDER}-pg.yaml
 
 cp deployment/templates/postgres.yaml $FILE_PATH
+yq --inplace ".spec..target.name = \"${REPONAME}-pg-${ENV}-password\"" $FILE_PATH
 yq --inplace ".metadata.name = \"${REPONAME}-pg-${ENV}\"" $FILE_PATH
 yq --inplace ".spec.id = \"${REPONAME}-pg-${ENV}\"" $FILE_PATH
 yq --inplace ".spec.compositionSelector.matchLabels.provider = \"${PROVIDER}\"" $FILE_PATH
