@@ -1,6 +1,8 @@
 apiVersion: dps.cluster/v1alpha1
 kind: SQLClaim
 metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "-10"
   name: NAME
 spec:
   id: NAME
