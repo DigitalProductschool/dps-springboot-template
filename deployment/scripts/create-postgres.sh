@@ -5,7 +5,7 @@ VERSION=$4
 SIZE=$5
 ACCOUNT=$6
 
-FILE_PATH=deployment/app-${ENV}/${ACCOUNT}-${PROVIDER}-pg-password.yaml
+FILE_PATH=deployment/app-${ENV}/${ACCOUNT}-${PROVIDER}-pg-secret.yaml
 FILE_PATH2=deployment/app-${ENV}/${ACCOUNT}-${PROVIDER}-pg.yaml
 
 cp deployment/templates/secret.yaml $FILE_PATH
