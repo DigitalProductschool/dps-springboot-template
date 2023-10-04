@@ -29,7 +29,7 @@ db:
   enabled:
     crossplane:
       google: false
-      aws: false
+      aws: true
       azure: false
   size: "small"
 
@@ -37,7 +37,7 @@ ingress:
   host: "test.dpschool.app"
   className: nginx
 tls:
-  enabled: false
+  enabled: true
   
 
 
