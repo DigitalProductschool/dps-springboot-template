@@ -1,0 +1,44 @@
+{{- if .Values.tls.enabled }}
+---
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ template "dps-template.name" . }}
+spec:
+  secretName: {{ template "dps-template.name" . }}
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-dps
+  commonName: {{ .Values.ingress.host }}
+  dnsNames:
+  - {{ .Values.ingress.host }}
+{{- end }}
+
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-dps
+spec:
+  acme:
+    email: stockerl@unternehmertum.de
+    preferredChain: ""
+    privateKeySecretRef:
+      name: letsencrypt-dps
+    server: https://acme-v02.api.letsencrypt.org/directory
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+    - dns01:
+        cloudDNS:
+          # The ID of the GCP project
+          project: dps-infrastructure
+          # This is the secret used to access the service account
+          serviceAccountSecretRef:
+            name: clouddns-dns01-sa
+            key: dns-sa-keyfile.json
+      selector:
+        dnsZones:
+        - 'dpschool.app.' # This is the DNS name of the zone
