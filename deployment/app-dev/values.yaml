@@ -34,7 +34,7 @@ db:
   size: "small"
 
 ingress:
-  host: "test.dpschool.app"
+  host: "dps-template.dpschool.app"
   className: nginx
 tls:
   enabled: true
