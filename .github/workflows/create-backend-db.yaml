@@ -29,7 +29,7 @@ jobs:
       - name: Variables
         id: vars
         run: |
-          echo "VERSION=${{ github.run_number }}" >> "$GITHUB_ENV"
+          echo "VERSION=1.0.${{ github.run_number }}" >> "$GITHUB_ENV"
           echo "IMAGE=ghcr.io/digitalproductschool/${{ github.event.repository.name }}/backend" >> "$GITHUB_ENV"
       - name: Setup pack
         id: setup-pack
@@ -53,8 +53,8 @@ jobs:
 
       - name: Update Helm
         run: |
-          chmod +x deployment/scripts/update-helm.sh
-          ./deployment/scripts/update-helm.sh ${{ env.VERSION }} ${{ env.IMAGE }}  ${{ inputs.provider }} ${{ inputs.env }} ${{ inputs.size }} ${{ inputs.account }} ${{ inputs.host }}
+          chmod +x deployment/scripts/update-helm-values.sh
+          ./deployment/scripts/update-helm-values.sh ${{ env.VERSION }} ${{ env.IMAGE }}  ${{ inputs.provider }} ${{ inputs.env }} ${{ inputs.size }} ${{ inputs.account }} ${{ inputs.host }}
 
       - name: Commit changes
         run: |
