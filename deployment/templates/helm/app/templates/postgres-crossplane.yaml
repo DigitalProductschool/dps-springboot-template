@@ -30,7 +30,7 @@ spec:
     {{- end }}
     size: {{ .Values.db.size }}
     {{- if .Values.db.enabled.crossplane.aws }}
-    providerName: {{ .Values.db.account }}
+    providerName: {{ .Values.db.providerName }}
     {{- end }}
 ---
 apiVersion: external-secrets.io/v1beta1
