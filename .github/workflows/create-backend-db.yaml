@@ -1,0 +1,67 @@
+name: Create Backend with postgreSQL instance
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        required: true
+        description: "The environement ( prod or dev )"
+      provider:
+        required: true
+        description: "The Cloud Provider"
+        default: aws-official
+      size:
+        required: true
+        description: "The postgres size"
+        default: small
+      account:
+        required: true
+        description: "The team's account"
+      host:
+        required: true
+        description: "The team's domain name"
+jobs:
+  deploy-postgres:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Variables
+        run: |
+          echo "VERSION=${{ github.run_number }}" >> "$GITHUB_ENV"
+          echo "IMAGE=ghcr.io/digitalproductschool/${{ github.event.repository.name }}/backend" >> "$GITHUB_ENV"
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup pack
+        id: setup-pack
+        uses: buildpacks/github-actions/setup-pack@v4.4.0tion@v2
+      - name: Login to Github Packages
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{ secrets.GHCR_PAT }}
+      - name: Build image and push to GitHub Container Registry
+        id: package
+        run: |
+          #!/usr/bin/env bash
+          pack build --path ${CONTEXT} --builder paketobuildpacks/builder:base --publish ${REPO}:${TAG}
+        shell: bash
+        env:
+          REPO: ${{ env.IMAGE }}
+          TAG: ${{ env.VERSION }}
+          CONTEXT: ./backend
+
+      - name: Update Helm
+        run: |
+          chmod +x deployment/scripts/update-helm.sh
+          ./deployment/scripts/update-helm.sh ${{ env.VERSION }} ${{ env.IMAGE }}  ${{ inputs.provider }} ${{ inputs.env }} ${{ inputs.size }} ${{ inputs.account }} ${{ inputs.host }}
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -m "Create AWS RDS ${{ inputs.namespace }}"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
