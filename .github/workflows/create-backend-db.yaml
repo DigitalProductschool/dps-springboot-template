@@ -20,7 +20,7 @@ on:
         required: true
         description: "The team's domain name"
 jobs:
-  deploy-postgres:
+  deploy-backend-postgres:
     runs-on: ubuntu-latest
     steps:
       - name: Variables
