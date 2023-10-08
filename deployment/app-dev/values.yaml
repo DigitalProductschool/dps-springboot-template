@@ -1,14 +1,14 @@
 replicas: 2
 backend:
-  enabled: 1.0.14
-  image:
-    repository: "ghcr.io/digitalproductschool/dps-template/backend"
-    tag: "1.0.14"
-frontend:
   enabled: false
   image:
     repository: ""
     tag: ""
+frontend:
+  enabled: "true"
+  image:
+    repository: "ghcr.io/digitalproductschool/dps-template/frontend"
+    tag: "1.0.5"
 image:
   pullPolicy: Always
 imagePullSecrets:
@@ -26,14 +26,14 @@ securityContext:
     drop: ["ALL"]
   allowPrivilegeEscalation: false
 db:
-  id: "default-pg-dev"
+  id: ""
   enabled:
     crossplane:
       google: false
-      aws: "true"
+      aws: false
       azure: false
-  size: "small"
-  providerName: "default"
+  size: ""
+  providerName: ""
 ingress:
   host: "dps-template.dpschool.app"
   className: nginx
