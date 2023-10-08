@@ -11,7 +11,7 @@ VALUES_FILE=deployment/app-${ENV}/values.yaml
 
 DIRECTORY=deployment/app-${ENV}
 
-cp -r deployment/templates/helm/app $DIRECTORY
+cp -r deployment/templates/helm/app $DIRECTORY/
 
 yq --inplace ".version = \"${VERSION}\"" $CHART_FILE
 yq --inplace ".image.tag = \"${VERSION}\"" $VALUES_FILE
