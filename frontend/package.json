@@ -30,8 +30,7 @@
 		"eject": "react-scripts eject",
 		"lint": "eslint .",
 		"lint:fix": "eslint --fix",
-		"format": "prettier --write './**/*.{js,jsx,css,md,json}' --config ./.prettierrc",
-		"prepare":  "cd .. && husky install frontend/.husky && npx husky add frontend/.husky/pre-commit \"cd frontend && npx lint-staged\""
+		"format": "prettier --write './**/*.{js,jsx,css,md,json}' --config ./.prettierrc"
 	},
 	"browserslist": [
 		">0.2%",
