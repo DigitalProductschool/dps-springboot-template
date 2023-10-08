@@ -38,7 +38,7 @@ ingress:
   host: ""
   className: nginx
 tls:
-  enabled: true
+  enabled: false
   
 
 
