@@ -1,7 +1,3 @@
-if [ $# -ne 8 ]; then
-    echo "Usage: $0 <VERSION> <IMAGE> <ENV> <HOST> <CONTEXT>"
-    exit 1
-fi
 # Assign arguments to variables
 VERSION=$1
 IMAGE=$2
