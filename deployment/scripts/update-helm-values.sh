@@ -8,14 +8,12 @@ HOST=$7
 
 
 
-SOURCE_DIR="deployment/templates/helm/app"
-DESTINATION_DIR="deployment/app-${ENV}/app"
-mkdir -p "$DESTINATION_DIR"
+DIRECTORY=deployment/app-${ENV}
 
-cp -r "$SOURCE_DIR"/* "$DESTINATION_DIR/"
+CHART_FILE=$DIRECTORY/Chart.yaml
+VALUES_FILE=$DIRECTORY/values.yaml
 
-CHART_FILE=$DESTINATION_DIR/Chart.yaml
-VALUES_FILE=$DESTINATION_DIR/values.yaml
+cp -r deployment/templates/helm/app/* $DIRECTORY
 
 yq --inplace ".version = \"${VERSION}\"" $CHART_FILE
 yq --inplace ".image.tag = \"${VERSION}\"" $VALUES_FILE
