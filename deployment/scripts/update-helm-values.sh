@@ -6,14 +6,16 @@ SIZE=$5
 ACCOUNT=$6
 HOST=$7
 
-CHART_FILE=deployment/app-${ENV}/Chart.yaml
-VALUES_FILE=deployment/app-${ENV}/values.yaml
+
 
 SOURCE_DIR="deployment/templates/helm/app"
 DESTINATION_DIR="deployment/app-${ENV}/app"
 mkdir -p "$DESTINATION_DIR"
 
 cp -r "$SOURCE_DIR"/* "$DESTINATION_DIR/"
+
+CHART_FILE=$DESTINATION_DIR/Chart.yaml
+VALUES_FILE=$DESTINATION_DIR/values.yaml
 
 yq --inplace ".version = \"${VERSION}\"" $CHART_FILE
 yq --inplace ".image.tag = \"${VERSION}\"" $VALUES_FILE
