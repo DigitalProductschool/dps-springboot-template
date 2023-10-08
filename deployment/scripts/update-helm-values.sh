@@ -38,7 +38,7 @@ fi
 
 # Update values in Chart.yaml and values.yaml
 yq --inplace ".version = \"${VERSION}\"" $CHART_FILE
-yq --inplace ".${CONTEXT}.enabled = \"${VERSION}\"" $VALUES_FILE
+yq --inplace ".${CONTEXT}.enabled = \"true\"" $VALUES_FILE
 yq --inplace ".${CONTEXT}.image.tag = \"${VERSION}\"" $VALUES_FILE
 yq --inplace ".${CONTEXT}.image.repository = \"${IMAGE}\"" $VALUES_FILE
 yq --inplace ".ingress.host = \"${HOST}\"" $VALUES_FILE
