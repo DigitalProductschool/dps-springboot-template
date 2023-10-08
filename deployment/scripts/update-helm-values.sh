@@ -30,16 +30,15 @@ if [[ "$CONTEXT" == "backend" ]]; then
     yq --inplace ".db.providerName = \"${ACCOUNT}\"" $VALUES_FILE
     yq --inplace ".db.id = \"${ACCOUNT}-pg-${ENV}\"" $VALUES_FILE
     case "$PROVIDER" in
-        aws-official)    DB_ENABLED=".db.enabled.crossplane.aws" ;;
-        azure-official)  DB_ENABLED=".db.enabled.crossplane.azure" ;;
-        google-official) DB_ENABLED=".db.enabled.crossplane.google" ;;
+        aws-official)    yq --inplace ".db.enabled.crossplane.aws = \"true\"" "$VALUES_FILE" ;;
+        azure-official)  yq --inplace ".db.enabled.crossplane.azure = \"true\"" "$VALUES_FILE" ;;
+        google-official) yq --inplace ".db.enabled.crossplane.google = \"true\"" "$VALUES_FILE" ;;
     esac
-    yq --inplace ".$DB_ENABLED = \"true\"" "$VALUES_FILE"
 fi
 
 # Update values in Chart.yaml and values.yaml
-yq --inplace ".${CONTEXT}.enabled = \"true\"" $VALUES_FILE
 yq --inplace ".version = \"${VERSION}\"" $CHART_FILE
+yq --inplace ".${CONTEXT}.enabled = \"${VERSION}\"" $VALUES_FILE
 yq --inplace ".${CONTEXT}.image.tag = \"${VERSION}\"" $VALUES_FILE
 yq --inplace ".${CONTEXT}.image.repository = \"${IMAGE}\"" $VALUES_FILE
 yq --inplace ".ingress.host = \"${HOST}\"" $VALUES_FILE
