@@ -1,5 +1,5 @@
+{{- if .Values.backend.enabled }}
 ---
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -26,10 +26,10 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-      - name: main
+      - name: backend-app
         securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
           - containerPort: 8080
@@ -85,3 +85,4 @@ spec:
         - name: DB_NAME
           value: {{ .Values.db.id }}
         {{- end }}
+{{- end }}

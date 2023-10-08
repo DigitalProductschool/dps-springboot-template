@@ -1,3 +1,4 @@
+{{- if .Values.backend.enabled }}
 ---
 
 apiVersion: v1
@@ -15,3 +16,4 @@ spec:
   selector:
     app.kubernetes.io/name: {{ template "dps-template.name" . }}
     {{- include "dps-template.selectorLabels" . | nindent 4 }}
+{{- end }}

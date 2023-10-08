@@ -1,22 +1,11 @@
-name: Create Backend with postgreSQL instance
-run-name: backend-postgres
+name: Create Frontend
+run-name: frontend
 on:
   workflow_dispatch:
     inputs:
       env:
         required: true
         description: "The environement ( prod or dev )"
-      provider:
-        required: true
-        description: "The Cloud Provider"
-        default: aws-official
-      size:
-        required: true
-        description: "The postgres size"
-        default: small
-      account:
-        required: true
-        description: "The team's account"
       host:
         required: true
         description: "The team's domain name"
@@ -30,8 +19,8 @@ jobs:
         id: vars
         run: |
           echo "VERSION=1.0.${{ github.run_number }}" >> "$GITHUB_ENV"
-          echo "IMAGE=ghcr.io/digitalproductschool/${{ github.event.repository.name }}/backend" >> "$GITHUB_ENV"
-          echo "CONTEXT=backend" >> "$GITHUB_ENV"
+          echo "IMAGE=ghcr.io/digitalproductschool/${{ github.event.repository.name }}/frontend" >> "$GITHUB_ENV"
+          echo "CONTEXT=frontend" >> "$GITHUB_ENV"
       - name: Setup pack
         id: setup-pack
         uses: buildpacks/github-actions/setup-pack@v5.1.0
@@ -45,7 +34,7 @@ jobs:
         id: package
         run: |
           #!/usr/bin/env bash
-          pack build --path ${DIR} --builder paketobuildpacks/builder:base --publish ${REPO}:${TAG}
+          pack build --path ${DIR} --builder paketobuildpacks/builder:base --descriptor ${DIR}/nginx.toml --publish ${REPO}:${TAG} --creation-time now
         shell: bash
         env:
           REPO: ${{ env.IMAGE }}

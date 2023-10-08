@@ -1,13 +1,20 @@
 replicas: 2
+backend:
+  enabled: false
+  image:
+    repository: ""
+    tag: ""
+
+frontend:
+  enabled: false
+  image:
+    repository: ""
+    tag: ""
 
 image:
-  repository: ""
   pullPolicy: Always
-  tag: ""
-
 imagePullSecrets: 
   - name: ghcr-credentials
-
 
 podSecurityContext: 
   runAsNonRoot: true
