@@ -30,4 +30,4 @@ ingress:
   host: "dps-template.dpschool.app"
   className: nginx
 tls:
-  enabled: false
+  enabled: true
