@@ -1,7 +1,7 @@
 replicas: 2
 image:
-  repository: "ghcr.io/digitalproductschool/dps-template/backend"
-  tag: "1.0.16"
+  repository: "ghcr.io/digitalproductschool/dps-template/frontend"
+  tag: "1.0.6"
   pullPolicy: Always
 imagePullSecrets:
   - name: ghcr-credentials
@@ -17,15 +17,12 @@ securityContext:
   capabilities:
     drop: ["ALL"]
   allowPrivilegeEscalation: false
-db:
-  id: "default-sql-dev"
-  enabled:
-    crossplane:
-      google: false
-      aws: "true"
-      azure: false
-  size: "small"
-  providerName: "default"
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
 ingress:
   host: "dps-template.dpschool.app"
   className: nginx
