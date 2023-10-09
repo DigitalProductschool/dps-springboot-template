@@ -3,11 +3,11 @@ ENV=$1
 CONTEXT=$2
 REPO=$3
 
-FILE_PATH=deployment/app-${ENV}/app.yaml
+FILE_PATH=deployment/app-${ENV}/app-${CONTEXT}.yaml
 
 DIRECTORY=deployment/app-${ENV}
 
-cp  deployment/templates/argocd/app.yaml $FILE_PATH
+cp  deployment/templates/argocd/app-${CONTEXT}.yaml $FILE_PATH
 
 
 ENVIRONMENT="dev"
