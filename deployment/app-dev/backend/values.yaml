@@ -1,7 +1,7 @@
 replicas: 2
 image:
   repository: "ghcr.io/digitalproductschool/dps-template/backend"
-  tag: "1.0.18"
+  tag: "1.0.20"
   pullPolicy: Always
 imagePullSecrets:
   - name: ghcr-credentials
@@ -18,7 +18,7 @@ securityContext:
     drop: ["ALL"]
   allowPrivilegeEscalation: false
 db:
-  id: "default-sql-dev-1.0.18"
+  id: "default-sql-dev-1.0.20"
   enabled:
     crossplane:
       google: false
