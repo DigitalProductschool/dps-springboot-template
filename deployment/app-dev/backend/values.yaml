@@ -18,7 +18,7 @@ securityContext:
     drop: ["ALL"]
   allowPrivilegeEscalation: false
 db:
-  id: "default-sql-dev-1.0.20"
+  id: "default-sql-dev-1-0-20"
   enabled:
     crossplane:
       google: false
