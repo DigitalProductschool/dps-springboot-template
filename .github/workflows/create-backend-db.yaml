@@ -51,6 +51,11 @@ jobs:
           REPO: ${{ env.IMAGE }}
           TAG: ${{ env.VERSION }}
           DIR: ./${{ env.CONTEXT }}
+      
+      - name: Create Argo App
+        run: |
+          chmod +x deployment/scripts/create-argo-app.sh
+          ./deployment/scripts/create-argo-app.sh  ${{ inputs.env }} ${{ env.CONTEXT }} 
 
       - name: Update Helm
         run: |

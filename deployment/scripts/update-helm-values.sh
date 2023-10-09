@@ -8,15 +8,19 @@ ACCOUNT=$6
 HOST=$7
 CONTEXT=$8
 
-# Define the destination directory based on the environment
-DIRECTORY=deployment/app-${ENV}
+# Define the destination and source directories based on the environment and the context
+SOURCE_DIR="deployment/templates/helm/${CONTEXT}"
+DESTINATION_DIR="deployment/app-${ENV}/${CONTEXT}"
+
+mkdir -p "$DESTINATION_DIR"
+
+# Copy the helm chart to the destination directory
+cp -r "$SOURCE_DIR"/* "$DESTINATION_DIR/"
 
 # Paths to Chart.yaml and values.yaml
-CHART_FILE=$DIRECTORY/Chart.yaml
-VALUES_FILE=$DIRECTORY/values.yaml
+CHART_FILE=$DESTINATION_DIR/Chart.yaml
+VALUES_FILE=$DESTINATION_DIR/values.yaml
 
-# Copy the contents of the app template to the destination directory
-cp -r deployment/templates/helm/$CONTEXT/* $DIRECTORY
 
 # Update values in values.yaml based on context and provider
 if [[ "$CONTEXT" == "backend" ]]; then
