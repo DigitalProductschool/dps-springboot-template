@@ -8,6 +8,7 @@ metadata:
 spec:
   project: dev
   source:
+    repoURL: https://github.com/DigitalProductschool/dps-template.git
     targetRevision: HEAD
     path: deployment/app-dev/backend
   destination:

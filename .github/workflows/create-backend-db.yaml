@@ -55,7 +55,7 @@ jobs:
       - name: Create Argo App
         run: |
           chmod +x deployment/scripts/create-argo-app.sh
-          ./deployment/scripts/create-argo-app.sh  ${{ inputs.env }} ${{ env.CONTEXT }} 
+          ./deployment/scripts/create-argo-app.sh  ${{ inputs.env }} ${{ env.CONTEXT }} ${{ github.event.repository.name }}
 
       - name: Update Helm
         run: |
