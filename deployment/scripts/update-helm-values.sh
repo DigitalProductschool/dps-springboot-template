@@ -22,7 +22,7 @@ cp -r deployment/templates/helm/$CONTEXT/* $DIRECTORY
 if [[ "$CONTEXT" == "backend" ]]; then
     yq --inplace ".db.size = \"${SIZE}\"" $VALUES_FILE
     yq --inplace ".db.providerName = \"${ACCOUNT}\"" $VALUES_FILE
-    yq --inplace ".db.id = \"${ACCOUNT}-pg-${ENV}\"" $VALUES_FILE
+    yq --inplace ".db.id = \"${ACCOUNT}-sql-${ENV}\"" $VALUES_FILE
     case "$PROVIDER" in
         aws-official)    yq --inplace ".db.enabled.crossplane.aws = \"true\"" "$VALUES_FILE" ;;
         azure-official)  yq --inplace ".db.enabled.crossplane.azure = \"true\"" "$VALUES_FILE" ;;
