@@ -14,7 +14,7 @@ if [[ "$ENV" == "prod" ]]; then
     ENVIRONMENT="production"
 fi
 
-yq --inplace ".metedata.name = \"${CONTEXT}-${ENV}\"" $FILE_PATH
+yq --inplace ".metadata.name = \"${CONTEXT}-${ENV}\"" $FILE_PATH
 yq --inplace ".spec.project = \"${ENVIRONMENT}\"" $FILE_PATH
 yq --inplace ".spec.source.path = \"${DIRECTORY}/${CONTEXT}\"" $FILE_PATH
 yq --inplace ".spec.destination.namespace = \"${ENV}\"" $FILE_PATH

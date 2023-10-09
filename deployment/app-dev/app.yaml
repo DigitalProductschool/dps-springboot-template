@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: CONTEXT
+  name: backend-dev
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -18,5 +18,3 @@ spec:
       selfHeal: true
       prune: true
       allowEmpty: true
-metedata:
-  name: backend-dev
