@@ -1,17 +1,8 @@
 replicas: 2
-backend:
-  enabled: false
-  image:
-    repository: ""
-    tag: ""
-
-frontend:
-  enabled: false
-  image:
-    repository: ""
-    tag: ""
-
+  
 image:
+  repository: ""
+  tag: ""
   pullPolicy: Always
 imagePullSecrets: 
   - name: ghcr-credentials
@@ -30,22 +21,15 @@ securityContext:
     drop: ["ALL"]
   allowPrivilegeEscalation: false
 
-
-db:
-  id: ""
-  enabled:
-    crossplane:
-      google: false
-      aws: false
-      azure: false
-  size: ""
-  providerName: ""
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
 
 ingress:
   host: ""
   className: nginx
 tls:
   enabled: true
-  
-
-

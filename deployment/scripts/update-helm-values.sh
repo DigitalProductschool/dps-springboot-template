@@ -16,7 +16,7 @@ CHART_FILE=$DIRECTORY/Chart.yaml
 VALUES_FILE=$DIRECTORY/values.yaml
 
 # Copy the contents of the app template to the destination directory
-cp -r deployment/templates/helm/app/* $DIRECTORY
+cp -r deployment/templates/helm/$CONTEXT/* $DIRECTORY
 
 # Update values in values.yaml based on context and provider
 if [[ "$CONTEXT" == "backend" ]]; then
@@ -32,7 +32,6 @@ fi
 
 # Update values in Chart.yaml and values.yaml
 yq --inplace ".version = \"${VERSION}\"" $CHART_FILE
-yq --inplace ".${CONTEXT}.enabled = \"true\"" $VALUES_FILE
-yq --inplace ".${CONTEXT}.image.tag = \"${VERSION}\"" $VALUES_FILE
-yq --inplace ".${CONTEXT}.image.repository = \"${IMAGE}\"" $VALUES_FILE
+yq --inplace ".image.tag = \"${VERSION}\"" $VALUES_FILE
+yq --inplace ".image.repository = \"${IMAGE}\"" $VALUES_FILE
 yq --inplace ".ingress.host = \"${HOST}\"" $VALUES_FILE
