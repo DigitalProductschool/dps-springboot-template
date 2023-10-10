@@ -7,6 +7,7 @@ SIZE=$5
 ACCOUNT=$6
 HOST=$7
 CONTEXT=$8
+REPO=$9
 
 # Define the destination and source directories based on the environment and the context
 SOURCE_DIR="deployment/templates/helm/${CONTEXT}"
@@ -21,12 +22,14 @@ cp -r "$SOURCE_DIR"/* "$DESTINATION_DIR/"
 CHART_FILE=$DESTINATION_DIR/Chart.yaml
 VALUES_FILE=$DESTINATION_DIR/values.yaml
 
+VERSION_NO_DOTS=$(echo "$VERSION" | sed 's/\.//g')
+REPO_MODIFIED=$(echo "$REPO" | sed 's/^[^-]*--//')
 
 # Update values in values.yaml based on context and provider
 if [[ "$CONTEXT" == "backend" ]]; then
     yq --inplace ".db.size = \"${SIZE}\"" $VALUES_FILE
     yq --inplace ".db.providerName = \"${ACCOUNT}\"" $VALUES_FILE
-    yq --inplace ".db.id = \"${ACCOUNT}-sql-${ENV}-${VERSION}\"" $VALUES_FILE
+    yq --inplace ".db.id = \"${REPO_MODIFIED}-${ENV}-${VERSION_NO_DOTS}\"" $VALUES_FILE
     case "$PROVIDER" in
         aws-official)    yq --inplace ".db.enabled.crossplane.aws = \"true\"" "$VALUES_FILE" ;;
         azure-official)  yq --inplace ".db.enabled.crossplane.azure = \"true\"" "$VALUES_FILE" ;;

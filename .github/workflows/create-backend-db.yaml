@@ -60,7 +60,7 @@ jobs:
       - name: Update Helm
         run: |
           chmod +x deployment/scripts/update-helm-values.sh
-          ./deployment/scripts/update-helm-values.sh ${{ env.VERSION }} ${{ env.IMAGE }}  ${{ inputs.provider }} ${{ inputs.env }} ${{ inputs.size }} ${{ inputs.account }} ${{ inputs.host }} ${{ env.CONTEXT }} 
+          ./deployment/scripts/update-helm-values.sh ${{ env.VERSION }} ${{ env.IMAGE }}  ${{ inputs.provider }} ${{ inputs.env }} ${{ inputs.size }} ${{ inputs.account }} ${{ inputs.host }} ${{ env.CONTEXT }} ${{ github.event.repository.name }}
 
       - name: Commit changes
         run: |
