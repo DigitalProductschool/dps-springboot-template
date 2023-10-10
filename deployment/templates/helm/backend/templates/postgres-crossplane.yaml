@@ -5,7 +5,7 @@ apiVersion: dps.cluster/v1alpha1
 kind: SQLClaim
 metadata:
   annotations:
-    argocd.argoproj.io/sync-wave: "-10"
+    "helm.sh/hook-weight": "-10"
   name: {{ template "dps-template.name" . }}
 spec:
   id: {{ .Values.db.id }}
@@ -38,7 +38,7 @@ kind: ExternalSecret
 metadata:
   name: {{ .Values.db.id }}-password
   annotations:
-    argocd.argoproj.io/sync-wave: "-10"
+    "helm.sh/hook-weight": "-10"
 spec:
   refreshInterval: 1m
   secretStoreRef:
