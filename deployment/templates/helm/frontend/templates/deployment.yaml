@@ -15,8 +15,8 @@ spec:
   template:
     metadata:
     labels:
-        app.kubernetes.io/name: {{ template "frontend.name" . }}
-        {{- include "frontend.selectorLabels" . | nindent 8 }}
+      app.kubernetes.io/name: {{ template "frontend.name" . }}
+      {{- include "frontend.selectorLabels" . | nindent 6 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
