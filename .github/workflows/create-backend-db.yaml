@@ -51,7 +51,7 @@ jobs:
         id: package
         run: |
           #!/usr/bin/env bash
-          pack build --path ${DIR} --builder paketobuildpacks/builder:base --publish ${REPO}:${TAG}
+          pack build --path ${DIR} --builder paketobuildpacks/builder:base --publish ${REPO}:${TAG} -e BP_JVM_VERSION=17
         shell: bash
         env:
           REPO: ${{ env.IMAGE }}
