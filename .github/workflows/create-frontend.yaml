@@ -10,7 +10,7 @@ on:
         required: true
         description: "Application host name"
 jobs:
-  deploy-backend-postgres:
+  deploy-frontend:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -26,7 +26,7 @@ jobs:
         id: setup-pack
         uses: buildpacks/github-actions/setup-pack@v5.1.0
       - name: Login to Github Packages
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{github.actor}}
