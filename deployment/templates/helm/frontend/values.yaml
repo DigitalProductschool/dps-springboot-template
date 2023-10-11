@@ -21,13 +21,6 @@ securityContext:
     drop: ["ALL"]
   allowPrivilegeEscalation: false
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
-
 ingress:
   host: ""
   className: nginx

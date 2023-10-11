@@ -5,22 +5,23 @@ on:
     inputs:
       env:
         required: true
-        description: "The environement ( prod or dev )"
+        description: "Environment to deploy app to ( prod, dev )"
       host:
         required: true
-        description: "The team's domain name"
+        description: "Application host name"
 jobs:
   deploy-backend-postgres:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      # Define env vars ( Context, Version, Image)
       - name: Variables
         id: vars
         run: |
           echo "VERSION=1.0.${{ github.run_number }}" >> "$GITHUB_ENV"
-          echo "IMAGE=ghcr.io/digitalproductschool/${{ github.event.repository.name }}/frontend" >> "$GITHUB_ENV"
           echo "CONTEXT=frontend" >> "$GITHUB_ENV"
+          echo "IMAGE=ghcr.io/digitalproductschool/${{ github.event.repository.name }}/${{ env.CONTEXT }}" >> "$GITHUB_ENV"
       - name: Setup pack
         id: setup-pack
         uses: buildpacks/github-actions/setup-pack@v5.1.0
@@ -56,7 +57,7 @@ jobs:
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add .
-          git commit -m "Create Frontend app ${{ inputs.env }}"
+          git commit -m "Deploy ${{ env.CONTEXT }} to ${{ inputs.env }}"
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:

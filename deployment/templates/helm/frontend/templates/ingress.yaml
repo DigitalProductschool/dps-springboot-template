@@ -22,7 +22,9 @@ spec:
               name: frontend
               port:
                 number: 80   
+  {{- if .Values.tls.enabled }}
   tls:
   - hosts:
     - {{ .Values.ingress.host }}
     secretName: dps-template-certificate
+  {{- end }}
