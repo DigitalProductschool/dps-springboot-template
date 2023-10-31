@@ -1,0 +1,20 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+spec:
+  type:  ${{values.type | dump}}
+  lifecycle: ${{values.lifecycle | dump}}
+  owner: ${{values.appGroup | dump}}
+metadata:
+  name: ${{values.component_id | dump}}
+  {%- if values.description %}
+  description: ${{values.description | dump}}
+  {%- endif %}
+  annotations:
+    github.com/project-slug: ${{values.destination.owner + "/" + values.destination.repo}}
+
+  tags:
+    - springboot
+    - postgres
+    - react
+    - ${{ values.type | dump}}
+    - ${{ values.lifecycle | dump}}
