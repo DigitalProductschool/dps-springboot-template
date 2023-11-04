@@ -1,0 +1,31 @@
+name: Initialisation
+run-name: ESO-Cluster-Store
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Create Cluster Store
+        run: |
+          FILE_PATH=deployment/app-dev/eso-cluster-store.yaml
+          
+          cp  deployment/templates/cluster-store.yaml $FILE_PATH
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -m "Deploy ${{ env.CONTEXT }} to ${{ inputs.env }} 🤖"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GH_ACTIONS_BOT_ACCESS_TOKEN}}
+          branch: ${{ github.ref }}
