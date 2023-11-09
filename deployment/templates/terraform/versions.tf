@@ -6,13 +6,13 @@ terraform {
     }
   }
 
-  required_version = ">= 0.14"
+  required_version = ">= 1.1.0"
 
   cloud {
     organization = "DPS-IDP"
 
     workspaces {
-      name = "gh-actions"
+      name = "idp-gh-actions"
     }
   }
 }

@@ -33,7 +33,7 @@ variable "ip" {
   description = "The Ingress IP"
 }
 
-variable "provider" {
+variable "ingress_provider" {
     type = string
     description = "The cloud provider where the ingress is deployed"
   

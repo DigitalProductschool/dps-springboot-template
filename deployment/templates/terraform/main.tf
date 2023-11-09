@@ -1,5 +1,5 @@
 resource "google_dns_record_set" "a" {
-  count = var.provider == "aws" ? 0 : 1
+  count = var.ingress_provider == "aws-official" ? 0 : 1
   name         = "${var.subdomain}.${var.dns_name}"
   managed_zone = var.zone_name
   type         = "A"
@@ -10,7 +10,7 @@ resource "google_dns_record_set" "a" {
 
 
 resource "google_dns_record_set" "a-dev" {
-  count = var.provider == "aws" ? 0 : 1
+  count = var.ingress_provider == "aws-official" ? 0 : 1
   name         = "dev.${var.subdomain}.${var.dns_name}"
   managed_zone = var.zone_name
   type         = "A"
@@ -20,7 +20,7 @@ resource "google_dns_record_set" "a-dev" {
 }
 
 resource "google_dns_record_set" "c" {
-  count = var.provider == "aws" ? 0 : 1
+  count = var.ingress_provider == "aws-official" ? 1 : 0
   name         = "${var.subdomain}.${var.dns_name}"
   managed_zone = var.zone_name
   type         = "CNAME"
@@ -31,7 +31,7 @@ resource "google_dns_record_set" "c" {
 
 
 resource "google_dns_record_set" "c-dev" {
-  count = var.provider == "aws" ? 0 : 1
+  count = var.ingress_provider == "aws-official" ? 1 : 0
   name         = "dev.${var.subdomain}.${var.dns_name}"
   managed_zone = var.zone_name
   type         = "CNAME"

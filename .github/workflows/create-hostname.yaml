@@ -1,0 +1,130 @@
+name: Create hostname
+run-name: team's hostname
+on: 
+  workflow_dispatch:
+    inputs:
+      cluster:
+        description: 'Cluster Name'
+        required: true
+      hostname:
+        description: 'Hostname : e.g. team1.dpschool.app'
+        required: true
+      provider: 
+        description: 'Cloud provider where the ingress is deployed'
+        required: true
+
+env:
+  TF_CLOUD_ORGANIZATION: "DPS-IDP"
+  TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
+  TF_WORKSPACE: "idp-gh-actions"
+  CONFIG_DIRECTORY: "./deployment/templates/terraform"
+
+jobs:
+  extract-ingress:
+    name: Extract IP and Update tfvars
+    runs-on: ubuntu-latest
+    steps:
+      - uses: azure/setup-kubectl@v3
+      - name: Create/Verify `.kube` directory
+        run: mkdir -p ~/.kube/
+      - name: Create kubectl config
+        run: |
+          cat << EOF >> ~/.kube/kubeconfig.yaml
+          ${{ secrets.KUBECONFIG_SA }}
+          EOF
+      - name: Wait
+        run: |
+          KUBECONFIG=~/.kube/kubeconfig.yaml kubectl wait --for=condition=ready cluster.eks.aws.upbound.io/${{ inputs.cluster }} --timeout=300s
+      - name: Get K8s Cluster Info
+        run: |
+          KUBECONFIG=~/.kube/kubeconfig.yaml kubectl get secret ${{ inputs.cluster }}-cluster -n infra \
+            --output jsonpath="{.data.kubeconfig}" \
+            | base64 -d > kubeconfig-${{ inputs.cluster }}.yaml
+      - name: Extract Ingress
+        run: |
+          KUBECONFIG=~/.kube/kubeconfig.yaml kubectl wait --for=condition=ready release ${{ inputs.cluster }}-ingress --timeout=300s
+          echo "IP=$(KUBECONFIG=kubeconfig-${{ inputs.cluster }}.yaml kubectl get svc ${{ inputs.cluster }}-ingress-ingress-nginx-controller -n ingress-nginx --kubeconfig=kubeconfig-${{ inputs.cluster }}.yaml | grep LoadBalancer | awk '{print $4}')" >> "$GITHUB_ENV"
+      - name: Echo Ip
+        run: |
+          if [ "${{ inputs.provider }}" == "aws-official" ]; then
+           echo "FINAL_IP=${{ env.IP }}." >> "$GITHUB_ENV"
+          else
+           echo "FINAL_IP=${{ env.IP }}" >> "$GITHUB_ENV"
+          fi
+          echo "Final IP address: ${{ env.FINAL_IP }}"
+      
+      - name: Extract subdomain
+        run: |
+         if [[ ${{ inputs.hostname }} =~ ^.+\.dpschool\.app$ ]]; then
+         subdomain=$(echo ${{ inputs.hostname }} | sed 's/\.dpschool\.app$//')
+     
+         echo "subdomain extracted: $subdomain"
+         echo "SUBDOMAIN=$subdomain" >> "$GITHUB_ENV"
+         else
+             echo "Invalid domain name. Please enter a domain ending with 'dpschool.app'."
+             exit 1 
+         fi
+
+      - uses: patrontech/devops-tf-cloud-update-var@v1.0.1  
+        with:  
+          workSpaceName: ${{env.TF_WORKSPACE}} 
+          organizationName: ${{env.TF_CLOUD_ORGANIZATION}}  
+          terraformToken: ${{env.TF_API_TOKEN}}
+          terraformHost: 'app.terraform.io'
+          variableName: 'subdomain'
+          variableValue: ${{ env.SUBDOMAIN }}
+      
+      - uses: patrontech/devops-tf-cloud-update-var@v1.0.1 
+        with:  
+          workSpaceName: ${{env.TF_WORKSPACE}} 
+          organizationName: ${{env.TF_CLOUD_ORGANIZATION}}  
+          terraformToken: ${{env.TF_API_TOKEN}}
+          terraformHost: 'app.terraform.io'
+          variableName: 'ip'
+          variableValue: ${{ env.FINAL_IP }}
+
+      - uses: patrontech/devops-tf-cloud-update-var@v1.0.1
+        with:  
+          workSpaceName: ${{env.TF_WORKSPACE}} 
+          organizationName: ${{env.TF_CLOUD_ORGANIZATION}}  
+          terraformToken: ${{env.TF_API_TOKEN}}
+          terraformHost: 'app.terraform.io'
+          variableName: 'ingress_provider'
+          variableValue: ${{ inputs.provider }}
+       
+  setup-hostname:
+    name: Create hostname
+    needs: [extract-ingress]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+        - uses: actions/checkout@v3
+
+        - name: Upload Configuration
+          uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
+          id: apply-upload
+          with:
+            workspace: ${{ env.TF_WORKSPACE }}
+            directory: ${{ env.CONFIG_DIRECTORY }}
+        
+        - name: Create Plan Run
+          uses: hashicorp/tfc-workflows-github/actions/create-run@v1.0.0
+          id: plan-run
+          with:
+            workspace: ${{ env.TF_WORKSPACE }}
+            configuration_version: ${{ steps.apply-upload.outputs.configuration_version_id }}
+    
+        - name: Get Plan Output
+          uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.0.0
+          id: plan-output
+          with:
+            plan: ${{ fromJSON(steps.plan-run.outputs.payload).data.relationships.plan.data.id }}
+    
+        - name: Apply
+          uses: hashicorp/tfc-workflows-github/actions/apply-run@v1.0.0
+          if: fromJSON(steps.plan-run.outputs.payload).data.attributes.actions.IsConfirmable
+          id: apply
+          with:
+            run: ${{ steps.plan-run.outputs.run_id }}
+            comment: "Apply Run from GitHub Actions CI ${{ github.sha }}"
