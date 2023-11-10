@@ -23,9 +23,14 @@ variable "zone_name" {
 }
 
 
-variable "subdomain" {
+variable "subdomain_prod" {
   type        = string
-  description = "The DNS subdomain"
+  description = "The DNS subdomain for prod environment"
+}
+
+variable "subdomain_dev" {
+  type        = string
+  description = "The DNS subdomain for dev environment"
 }
 
 variable "ip" {
@@ -37,10 +42,4 @@ variable "ingress_provider" {
     type = string
     description = "The cloud provider where the ingress is deployed"
   
-}
-
-variable "gcp_credentials" {
-  type = string
-  sensitive = true
-  description = "Google Cloud service account credentials"
 }

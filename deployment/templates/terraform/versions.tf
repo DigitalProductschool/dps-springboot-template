@@ -8,11 +8,8 @@ terraform {
 
   required_version = ">= 1.1.0"
 
-  cloud {
-    organization = "DPS-IDP"
-
-    workspaces {
-      name = "idp-gh-actions"
-    }
+  backend "gcs" {
+    bucket="dps-tf-state"
+    prefix = "dns"
   }
 }

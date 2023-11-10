@@ -7,22 +7,22 @@ on:
         description: 'Cluster Name'
         required: true
       hostname:
-        description: 'Hostname : e.g. team1.dpschool.app'
+        description: 'Hostname : e.g. team1'
         required: true
       provider: 
         description: 'Cloud provider where the ingress is deployed'
         required: true
 
 env:
-  TF_CLOUD_ORGANIZATION: "DPS-IDP"
-  TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
-  TF_WORKSPACE: "idp-gh-actions"
+  TF_DNS_SA: "${{ secrets.TF_DNS_SA }}"
   CONFIG_DIRECTORY: "./deployment/templates/terraform"
 
 jobs:
   extract-ingress:
     name: Extract IP and Update tfvars
     runs-on: ubuntu-latest
+    outputs:
+      FINAL_IP: ${{ steps.FINAL_IP.outputs.FINAL_IP }}
     steps:
       - uses: azure/setup-kubectl@v3
       - name: Create/Verify `.kube` directory
@@ -44,87 +44,88 @@ jobs:
         run: |
           KUBECONFIG=~/.kube/kubeconfig.yaml kubectl wait --for=condition=ready release ${{ inputs.cluster }}-ingress --timeout=300s
           echo "IP=$(KUBECONFIG=kubeconfig-${{ inputs.cluster }}.yaml kubectl get svc ${{ inputs.cluster }}-ingress-ingress-nginx-controller -n ingress-nginx --kubeconfig=kubeconfig-${{ inputs.cluster }}.yaml | grep LoadBalancer | awk '{print $4}')" >> "$GITHUB_ENV"
+      
       - name: Echo Ip
+        id: FINAL_IP
         run: |
           if [ "${{ inputs.provider }}" == "aws-official" ]; then
-           echo "FINAL_IP=${{ env.IP }}." >> "$GITHUB_ENV"
+           echo "FINAL_IP=${{ env.IP }}." >> $GITHUB_OUTPUT
           else
-           echo "FINAL_IP=${{ env.IP }}" >> "$GITHUB_ENV"
+           echo "FINAL_IP=${{ env.IP }}"  >> $GITHUB_OUTPUT
           fi
-          echo "Final IP address: ${{ env.FINAL_IP }}"
-      
-      - name: Extract subdomain
-        run: |
-         if [[ ${{ inputs.hostname }} =~ ^.+\.dpschool\.app$ ]]; then
-         subdomain=$(echo ${{ inputs.hostname }} | sed 's/\.dpschool\.app$//')
-     
-         echo "subdomain extracted: $subdomain"
-         echo "SUBDOMAIN=$subdomain" >> "$GITHUB_ENV"
-         else
-             echo "Invalid domain name. Please enter a domain ending with 'dpschool.app'."
-             exit 1 
-         fi
-
-      - uses: patrontech/devops-tf-cloud-update-var@v1.0.1  
-        with:  
-          workSpaceName: ${{env.TF_WORKSPACE}} 
-          organizationName: ${{env.TF_CLOUD_ORGANIZATION}}  
-          terraformToken: ${{env.TF_API_TOKEN}}
-          terraformHost: 'app.terraform.io'
-          variableName: 'subdomain'
-          variableValue: ${{ env.SUBDOMAIN }}
-      
-      - uses: patrontech/devops-tf-cloud-update-var@v1.0.1 
-        with:  
-          workSpaceName: ${{env.TF_WORKSPACE}} 
-          organizationName: ${{env.TF_CLOUD_ORGANIZATION}}  
-          terraformToken: ${{env.TF_API_TOKEN}}
-          terraformHost: 'app.terraform.io'
-          variableName: 'ip'
-          variableValue: ${{ env.FINAL_IP }}
-
-      - uses: patrontech/devops-tf-cloud-update-var@v1.0.1
-        with:  
-          workSpaceName: ${{env.TF_WORKSPACE}} 
-          organizationName: ${{env.TF_CLOUD_ORGANIZATION}}  
-          terraformToken: ${{env.TF_API_TOKEN}}
-          terraformHost: 'app.terraform.io'
-          variableName: 'ingress_provider'
-          variableValue: ${{ inputs.provider }}
-       
+        
   setup-hostname:
     name: Create hostname
     needs: [extract-ingress]
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    defaults:
+      run:
+        working-directory: ${{ env.CONFIG_DIRECTORY }}
     steps:
         - uses: actions/checkout@v3
-
-        - name: Upload Configuration
-          uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
-          id: apply-upload
           with:
-            workspace: ${{ env.TF_WORKSPACE }}
-            directory: ${{ env.CONFIG_DIRECTORY }}
+            persist-credentials: false
         
-        - name: Create Plan Run
-          uses: hashicorp/tfc-workflows-github/actions/create-run@v1.0.0
-          id: plan-run
-          with:
-            workspace: ${{ env.TF_WORKSPACE }}
-            configuration_version: ${{ steps.apply-upload.outputs.configuration_version_id }}
-    
-        - name: Get Plan Output
-          uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.0.0
-          id: plan-output
-          with:
-            plan: ${{ fromJSON(steps.plan-run.outputs.payload).data.relationships.plan.data.id }}
-    
-        - name: Apply
-          uses: hashicorp/tfc-workflows-github/actions/apply-run@v1.0.0
-          if: fromJSON(steps.plan-run.outputs.payload).data.attributes.actions.IsConfirmable
+        - uses: hashicorp/setup-terraform@v2
+        
+        - name: Create backend config file
+          run: |
+            cat << EOF >> service-account.json
+            ${{ env.TF_DNS_SA }}
+            EOF
+        
+        - name: Update prefix
+          run: |
+           sed -i.bak "s/prefix = \"dns\"/prefix = \"records-${{ github.event.repository.name }}\"/" versions.tf
+      
+        - name: Terraform Init
+          run: terraform init -input=false
+          env:
+            GOOGLE_APPLICATION_CREDENTIALS: "./service-account.json"
+        
+        - name: Extract subdomain
+          run: |
+           if [[ ${{ inputs.hostname }} =~ ^.+\.dpschool\.app$ ]]; then
+           subdomain=$(echo ${{ inputs.hostname }} | sed 's/\.dpschool\.app$//')
+       
+           echo "subdomain extracted: $subdomain"
+           echo "SUBDOMAIN=$subdomain" >> "$GITHUB_ENV"
+           else
+               echo "Invalid domain name. Please enter a domain ending with 'dpschool.app'."
+               exit 1 
+           fi
+
+        - name: Setup terraform variables
+          id: vars
+          run: |-
+            cat > tf.auto.tfvars <<EOF
+            subdomain_prod="${{ env.SUBDOMAIN }}" 
+            subdomain_dev="dev.${{ env.SUBDOMAIN }}" 
+            ip="${{ needs.extract-ingress.outputs.FINAL_IP }}"
+            ingress_provider="${{ inputs.provider }}"
+            EOF
+      
+        - name: Terraform Plan
+          id: plan
+          run: terraform plan -input=false
+          env:
+            GOOGLE_APPLICATION_CREDENTIALS: "./service-account.json"
+        
+        - name: Terraform Apply
           id: apply
+          run: terraform apply -auto-approve -input=false
+          env:
+            GOOGLE_APPLICATION_CREDENTIALS: "./service-account.json"
+
+        - name: Commit changes
+          run: |
+            git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add .
+            git commit -m "Update tfvars and prefix 🤖"
+
+        - name: Push changes
+          uses: ad-m/github-push-action@master
           with:
-            run: ${{ steps.plan-run.outputs.run_id }}
-            comment: "Apply Run from GitHub Actions CI ${{ github.sha }}"
+            github_token: ${{ secrets.GH_ACTIONS_BOT_ACCESS_TOKEN}}
+            branch: ${{ github.ref }}
