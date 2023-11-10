@@ -9,7 +9,7 @@ terraform {
   required_version = ">= 1.1.0"
 }
 
-resource "google_dns_record_set" "c" {
+resource "google_dns_record_set" "a_record" {
   for_each = toset( var.subdomains ) 
   name         = "${each.key}.${var.dns_name}"
   managed_zone = var.zone_name
