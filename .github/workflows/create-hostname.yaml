@@ -3,9 +3,6 @@ run-name: team's hostname
 on: 
   workflow_dispatch:
     inputs:
-      cluster:
-        description: 'Cluster Name'
-        required: true
       hostname:
         description: 'Hostname : e.g. team1.dpschool.app'
         required: true
@@ -34,16 +31,16 @@ jobs:
           EOF
       - name: Wait
         run: |
-          KUBECONFIG=~/.kube/kubeconfig.yaml kubectl wait --for=condition=ready cluster.eks.aws.upbound.io/${{ inputs.cluster }} --timeout=300s
+          KUBECONFIG=~/.kube/kubeconfig.yaml kubectl wait --for=condition=ready cluster.eks.aws.upbound.io/${{ github.event.repository.name }} --timeout=300s
       - name: Get K8s Cluster Info
         run: |
-          KUBECONFIG=~/.kube/kubeconfig.yaml kubectl get secret ${{ inputs.cluster }}-cluster -n infra \
+          KUBECONFIG=~/.kube/kubeconfig.yaml kubectl get secret ${{ github.event.repository.name }}-cluster -n infra \
             --output jsonpath="{.data.kubeconfig}" \
-            | base64 -d > kubeconfig-${{ inputs.cluster }}.yaml
+            | base64 -d > kubeconfig-${{ github.event.repository.name }}.yaml
       - name: Extract Ingress
         run: |
-          KUBECONFIG=~/.kube/kubeconfig.yaml kubectl wait --for=condition=ready release ${{ inputs.cluster }}-ingress --timeout=300s
-          echo "IP=$(KUBECONFIG=kubeconfig-${{ inputs.cluster }}.yaml kubectl get svc ${{ inputs.cluster }}-ingress-ingress-nginx-controller -n ingress-nginx --kubeconfig=kubeconfig-${{ inputs.cluster }}.yaml | grep LoadBalancer | awk '{print $4}')" >> "$GITHUB_ENV"
+          KUBECONFIG=~/.kube/kubeconfig.yaml kubectl wait --for=condition=ready release ${{ github.event.repository.name }}-ingress --timeout=300s
+          echo "IP=$(KUBECONFIG=kubeconfig-${{ github.event.repository.name }}.yaml kubectl get svc ${{ github.event.repository.name }}-ingress-ingress-nginx-controller -n ingress-nginx --kubeconfig=kubeconfig-${{ github.event.repository.name }}.yaml | grep LoadBalancer | awk '{print $4}')" >> "$GITHUB_ENV"
       
       - name: Echo Ip
         id: FINAL_IP
