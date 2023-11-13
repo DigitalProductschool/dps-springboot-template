@@ -1,5 +1,6 @@
 # Compiled class file
 *.class
+service-account.json
 
 # Log file
 *.log
