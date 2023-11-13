@@ -7,7 +7,7 @@ on:
         description: 'Cluster Name'
         required: true
       hostname:
-        description: 'Hostname : e.g. team1'
+        description: 'Hostname : e.g. team1.dpschool.app'
         required: true
       provider: 
         description: 'Cloud provider where the ingress is deployed'
