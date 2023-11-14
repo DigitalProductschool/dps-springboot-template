@@ -2,7 +2,6 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 spec:
   type: service
-  lifecycle: ${{values.lifecycle | dump}}
   owner: ${{values.appGroup | dump}}
 metadata:
   name: ${{values.component_id | dump}}
