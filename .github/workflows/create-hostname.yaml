@@ -41,7 +41,7 @@ jobs:
             | base64 -d > kubeconfig-${{ github.event.repository.name }}.yaml
       - name: Extract Ingress
         run: |
-          KUBECONFIG=kubeconfig-${{ github.event.repository.name }}.yaml kubectl wait --for=condition=ready release ${{ github.event.repository.name }}-ingress --timeout=300s
+          KUBECONFIG=~/.kube/kubeconfig.yaml kubectl wait --for=condition=ready release ${{ github.event.repository.name }}-ingress --timeout=300s
           while ! KUBECONFIG=kubeconfig-${{ github.event.repository.name }}.yaml kubectl get svc ${{ github.event.repository.name }}-ingress-ingress-nginx-controller -n ingress-nginx; do echo "Waiting for ingress svc."; sleep 1; done
           echo "IP=$(KUBECONFIG=kubeconfig-${{ github.event.repository.name }}.yaml kubectl get svc ${{ github.event.repository.name }}-ingress-ingress-nginx-controller -n ingress-nginx --kubeconfig=kubeconfig-${{ github.event.repository.name }}.yaml | grep LoadBalancer | awk '{print $4}')" >> "$GITHUB_ENV"
       
