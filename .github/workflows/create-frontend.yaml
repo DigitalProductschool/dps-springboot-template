@@ -6,9 +6,6 @@ on:
       env:
         required: true
         description: "Environment to deploy app to ( prod, dev )"
-      host:
-        required: true
-        description: "Application host name"
 jobs:
   deploy-frontend:
     runs-on: ubuntu-latest

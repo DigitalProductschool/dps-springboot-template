@@ -17,9 +17,6 @@ on:
       account:
         required: true
         description: "The team's account"
-      host:
-        required: true
-        description: "Application host name"
 jobs:
   deploy-backend-postgres:
     runs-on: ubuntu-latest
