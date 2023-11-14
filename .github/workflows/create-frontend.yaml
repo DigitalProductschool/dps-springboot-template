@@ -49,22 +49,31 @@ jobs:
           TAG: ${{ env.VERSION }}
           DIR: ./${{ env.CONTEXT }}
 
+      - name: Adjust env
+        run: |
+          if [ "${{ inputs.env }}" == "development" ]; then
+              ENV="dev"
+          elif [ "${{ inputs.env }}" == "production" ]; then
+              ENV="prod"
+          fi
+          echo "ENV=$ENV" >> "$GITHUB_ENV"
+
       - name: Create Argo App
         run: |
           chmod +x deployment/scripts/create-argo-app.sh
-          ./deployment/scripts/create-argo-app.sh  ${{ inputs.env }} ${{ env.CONTEXT }} ${{ github.event.repository.name }}
+          ./deployment/scripts/create-argo-app.sh  ${{ env.ENV }} ${{ env.CONTEXT }} ${{ github.event.repository.name }}
 
       - name: Update Helm
         run: |
           chmod +x deployment/scripts/update-helm-values.sh
-          ./deployment/scripts/update-helm-values.sh ${{ env.VERSION }} ${{ env.IMAGE }}  "" ${{ inputs.env }} "" "" ${{ inputs.host }} ${{ env.CONTEXT }} ""
+          ./deployment/scripts/update-helm-values.sh ${{ env.VERSION }} ${{ env.IMAGE }}  "" ${{ env.ENV }} "" "" ${{ inputs.host }} ${{ env.CONTEXT }} ""
 
       - name: Commit changes
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add .
-          git commit -m "Deploy ${{ env.CONTEXT }} to ${{ inputs.env }} 🤖"
+          git commit -m "Deploy ${{ env.CONTEXT }} to ${{ env.ENV }} 🤖"
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:

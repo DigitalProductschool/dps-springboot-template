@@ -5,13 +5,13 @@ PROVIDER=$3
 ENV=$4
 SIZE=$5
 ACCOUNT=$6
-HOST=$7
-CONTEXT=$8
-REPO=$9
+CONTEXT=$7
+REPO=$8
 
 # Define the destination and source directories based on the environment and the context
 SOURCE_DIR="deployment/templates/helm/${CONTEXT}"
 DESTINATION_DIR="deployment/app-${ENV}/${CONTEXT}"
+TF_VARS_FILE="deployment/templates/terraform/tf.auto.tfvars" 
 
 mkdir -p "$DESTINATION_DIR"
 
@@ -41,4 +41,7 @@ fi
 yq --inplace ".version = \"${VERSION}\"" $CHART_FILE
 yq --inplace ".image.tag = \"${VERSION}\"" $VALUES_FILE
 yq --inplace ".image.repository = \"${IMAGE}\"" $VALUES_FILE
+
+HOST=$(grep "subdomain_${ENV}" "$TF_VARS_FILE" | awk -F'=' '{gsub(/"/, "", $2); print $2}')
+
 yq --inplace ".ingress.host = \"${HOST}\"" $VALUES_FILE
