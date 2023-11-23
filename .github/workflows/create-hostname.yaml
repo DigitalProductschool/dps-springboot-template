@@ -13,6 +13,8 @@ on:
 env:
   TF_DNS_SA: "${{ secrets.TF_DNS_SA }}"
   CONFIG_DIRECTORY: "./deployment/templates/terraform"
+  MANAGEMENT_CLUSTER: "dps-idp"
+  REGION: "eu-central-1"
 
 jobs:
   extract-ingress:
@@ -24,21 +26,16 @@ jobs:
       - uses: azure/setup-kubectl@v3
       - name: Create/Verify `.kube` directory
         run: mkdir -p ~/.kube/
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_IDP_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_IDP_SECRET_KEY }}
-          aws-region: eu-central-1
-      - name: Create kubectl config
-        run: |
-          cat << EOF >> ~/.kube/kubeconfig.yaml
-          ${{ secrets.KUBECONFIG_SA }}
-          EOF
+         role-to-assume: arn:aws:iam::197751596333:role/gh-actions-eks-role
+         aws-region: ${{ env.REGION }}
       - name: Wait
         run: |
           sleep 240
-          KUBECONFIG=~/.kube/kubeconfig.yaml kubectl wait --for=condition=ready cluster.eks.aws.upbound.io/${{ github.event.repository.name }} --timeout=900s
+          aws eks update-kubeconfig --region ${{ env.REGION }} --name ${{ env.MANAGEMENT_CLUSTER }}
+          kubectl wait --for=condition=ready cluster.eks.aws.upbound.io/${{ github.event.repository.name }} --timeout=900s
       - name: Get K8s Cluster Info
         run: |
           while ! KUBECONFIG=~/.kube/kubeconfig.yaml kubectl get secret ${{ github.event.repository.name }}-cluster -n infra; do echo "Waiting for cluster secret."; sleep 1; done
@@ -47,7 +44,7 @@ jobs:
             | base64 -d > kubeconfig-${{ github.event.repository.name }}.yaml
       - name: Extract Ingress
         run: |
-          KUBECONFIG=~/.kube/kubeconfig.yaml kubectl wait --for=condition=ready release ${{ github.event.repository.name }}-ingress --timeout=300s
+          kubectl wait --for=condition=ready release ${{ github.event.repository.name }}-ingress --timeout=300s
           while ! KUBECONFIG=kubeconfig-${{ github.event.repository.name }}.yaml kubectl get svc ${{ github.event.repository.name }}-ingress-ingress-nginx-controller -n ingress-nginx; do echo "Waiting for ingress svc."; sleep 1; done
           echo "IP=$(KUBECONFIG=kubeconfig-${{ github.event.repository.name }}.yaml kubectl get svc ${{ github.event.repository.name }}-ingress-ingress-nginx-controller -n ingress-nginx --kubeconfig=kubeconfig-${{ github.event.repository.name }}.yaml | grep LoadBalancer | awk '{print $4}')" >> "$GITHUB_ENV"
       
