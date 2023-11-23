@@ -16,6 +16,10 @@ env:
   MANAGEMENT_CLUSTER: "dps-idp"
   REGION: "eu-central-1"
 
+permissions:
+  contents: 'read'
+  id-token: 'write'
+
 jobs:
   extract-ingress:
     name: Extract IP and Update tfvars
