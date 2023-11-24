@@ -44,4 +44,4 @@ yq --inplace ".image.repository = \"${IMAGE}\"" $VALUES_FILE
 
 HOST=$(grep "subdomain_${ENV}" "$TF_VARS_FILE" | awk -F'=' '{gsub(/"/, "", $2); print $2}')
 
-yq --inplace ".ingress.host = \"${HOST}\"" $VALUES_FILE
+yq --inplace ".ingress.host = \"${HOST}.dpschool.app\"" $VALUES_FILE
