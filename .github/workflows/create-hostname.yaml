@@ -42,8 +42,8 @@ jobs:
           kubectl wait --for=condition=ready cluster.eks.aws.upbound.io/${{ github.event.repository.name }} --timeout=900s
       - name: Get K8s Cluster Info
         run: |
-          while ! KUBECONFIG=~/.kube/kubeconfig.yaml kubectl get secret ${{ github.event.repository.name }}-cluster -n infra; do echo "Waiting for cluster secret."; sleep 1; done
-          KUBECONFIG=~/.kube/kubeconfig.yaml kubectl get secret ${{ github.event.repository.name }}-cluster -n infra \
+          while ! kubectl get secret ${{ github.event.repository.name }}-cluster -n infra; do echo "Waiting for cluster secret."; sleep 1; done
+          kubectl get secret ${{ github.event.repository.name }}-cluster -n infra \
             --output jsonpath="{.data.kubeconfig}" \
             | base64 -d > kubeconfig-${{ github.event.repository.name }}.yaml
       - name: Extract Ingress
