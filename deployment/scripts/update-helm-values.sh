@@ -42,6 +42,6 @@ yq --inplace ".version = \"${VERSION}\"" $CHART_FILE
 yq --inplace ".image.tag = \"${VERSION}\"" $VALUES_FILE
 yq --inplace ".image.repository = \"${IMAGE}\"" $VALUES_FILE
 
-HOST=$(grep "subdomain_${ENV}" "$TF_VARS_FILE" | awk -F'=' '{gsub(/"/, "", $2); print $2}')
+HOST=$(grep "subdomain_${ENV}" "$TF_VARS_FILE" | awk -F'=' '{gsub(/"/, "", $2); gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2}')
 
 yq --inplace ".ingress.host = \"${HOST}.dpschool.app\"" $VALUES_FILE
