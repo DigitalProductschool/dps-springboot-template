@@ -1,80 +1,53 @@
-# AI Project Template: `Bank Loan Classification`
-<hr></hr>
+# Old Photo Colorizer📸🌈
 
-### Goal:
-This is a sample `Bank Loan Classification` project template where we are using a binary classification model to classify whether to grant loans to applicants or not. 
+Welcome to the Old Photo Colorizer, a user-friendly Gradio app that utilizes [modelscope's](https://huggingface.co/modelscope) colorizer to breathe new life into old black and white photos. 🚀
 
-### Dataset
-The `Bank Loan Classification` dataset used during the workshop is taken from Kaggle and can be found <a href='https://www.kaggle.com/sriharipramod/bank-loan-classification'>`here`</a>.
+## About the model 🤖:
 
-### Project Requirements 
-```bash
-- Python3.9
-- git
-- Docker
-```
-### Project Structure
+ModelScope is a platform that allows users to easily deploy and use machine learning models in their applications. It provides a simple API for users to interact with the models, and a dashboard for users to manage their models. ModelScope also provides a marketplace for users to share their models with the community.
 
-```bash
-Loan Classification Project
-├── models
-│   └── RF_Model_V1.pkl
-├── Dockerfile
-├── requirements.txt
-├── deployment.yaml
-├── model_api.py
-└── streamlit_app.py
-```
-    
-### Accessing Deployed App
-After completing the tasks your deployed model **API** can be accessed from the ai service endpoint in your cluster. You can also append `/docs` to the endpoint to have access to the Swagger UI for API Testing.
-  
-### Project Steps
+To use models in ModelScope, you can pip install modelscope or refer to their github repo https://github.com/modelscope/modelscope
 
-- `Step 1`: Cloning the repo
+## Pre-requisites:
+
+- Python 3.10+
+
+## Project Setup 🚀
+
+`Step 1:` Clone the repository
 
 ```bash
-git clone https://github.com/DigitalProductschool/react-spring-template.git
+git clone <repo-url>
 ```
 
- 
-- `Step 2`: Changing working directory to ai
-
-```bash
-cd react-spring-template/ai/
-```
- 
-- `Step 3`: Installing dependencies using pip3
- 
-```bash
-pip3 install -r requirements.txt
-```
-  
-- `Step 4`: Running uvicorn server ***locally***
+`Step 2:` Navigate to the project directory
 
 ```bash
-python3 model_api.py
-```
-**Note**: Go to `/docs` route to test the api. 
-
-- `Step 5`: Building the runner container image ***locally***
-```
-docker build -t ai-run-image -f run.Dockerfile .
-```
-- `Step 6`: Building the container image for our ai app using the Google Cloud Run builder ***locally***
-
-```
-pack build ai:dev --env-file ./pack_envfile --builder gcr.io/buildpacks/builder:v1 --run-image ai-run-image  
+cd ai
 ```
 
-> --env-file ./pack_envfile pass an env file to the build 
+`Step 3:` Install the dependencies
 
-> --run-image ai-run-image  use the custom run image called ai-run-image 
-
-
-- `Step 7`: Running the container ***locally***
-
+```bash
+pip install -r requirements.txt
 ```
-docker run --rm -d -p 8000:8000 -p 8501:8501 ai:dev 
+
+`Step 4:` Start the gradio app server
+
+```bash
+python app.py
 ```
-**Note**: Visit port `8501` to access Streamlit Application and `8000/docs` route to test the api. 
+
+Now you can access the app at http://localhost:8000/ 🎉
+
+## How to Use 🎨
+
+1. Simply upload your old black and white photo.
+2. Witness the magic as the colorizer brings your photo to life!
+3. Use the convenient slider-view to adjust the colorization intensity.
+
+## Acknowledgments 🙏
+
+Special thanks to the [colorizer](https://huggingface.co/modelscope) model from ModelScope that makes this app possible.
+
+Now, go ahead, upload those vintage photos, and let the Old Photo Colorizer work its magic! ✨
