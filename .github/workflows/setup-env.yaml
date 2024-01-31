@@ -1,0 +1,56 @@
+name: Create Backend with postgreSQL instance
+run-name: backend-postgres
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        required: true
+        description: "Environment to deploy app to ( prod, dev )"
+      provider:
+        required: true
+        description: "The Cloud Provider"
+        default: aws-official
+      size:
+        required: true
+        description: "Database size (small, medium, large)"
+        default: small
+      account:
+        required: true
+        description: "The team's account"
+jobs:
+  setup-env:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+      
+      - name: Setup Variable file
+        id: context_var
+        run: |
+            ENV="env: ${{ inputs.env }}"
+            SIZE="size: ${{ inputs.size }}"
+            PROVIDER="provider: ${{ inputs.provider }}" 
+            ACCOUNT="account: ${{ inputs.account }}"
+            
+            # Create a filename based on input variables
+            FILENAME="env_vars_file.txt"
+            
+            # Create the file with the specified structure
+            echo -e "$ENV\n$SIZE\n$PROVIDER\n$ACCOUNT" > "$FILENAME"
+            
+            echo "File '$FILENAME' created with the following content:"
+            cat "$FILENAME"
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -m "Setup env var file 🤖"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GH_ACTIONS_BOT_ACCESS_TOKEN}}
+          branch: ${{ github.ref }}
