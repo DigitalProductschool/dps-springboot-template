@@ -83,6 +83,9 @@ jobs:
           chmod +x deployment/scripts/update-helm-values.sh
           ./deployment/scripts/update-helm-values.sh ${{ env.VERSION }} ${{ env.IMAGE }}  ${{ env.provider }} ${{ env.ENV }} ${{ env.size }} ${{ env.account }} ${{ env.CONTEXT }} ${{ github.event.repository.name }}
 
+      - name: Delete env vars file
+        run: rm -rf env_vars_file.txt
+          
       - name: Commit changes
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
