@@ -2,21 +2,7 @@ name: Create Backend with postgreSQL instance
 run-name: backend-postgres
 on:
   workflow_dispatch:
-    inputs:
-      env:
-        required: true
-        description: "Environment to deploy app to ( prod, dev )"
-      provider:
-        required: true
-        description: "The Cloud Provider"
-        default: aws-official
-      size:
-        required: true
-        description: "Database size (small, medium, large)"
-        default: small
-      account:
-        required: true
-        description: "The team's account"
+
 jobs:
   deploy-backend-postgres:
     runs-on: ubuntu-latest
@@ -25,11 +11,32 @@ jobs:
         uses: actions/checkout@v3
         with:
           persist-credentials: false
-      
+
       - name: Context Variable
         id: context_var
         run: |
           echo "CONTEXT=backend" >> "$GITHUB_ENV"
+
+      - name: Extract env vars
+        id: env_vars
+        run: |
+          if [ -f "env_vars_file.txt" ]; then
+
+          # Read values from the file
+          env_var=$(grep "env:" env_vars_file.txt | awk '{print $2}')
+          size_var=$(grep "size:" env_vars_file.txt | awk '{print $2}')
+          provider_var=$(grep "provider:" env_vars_file.txt | awk '{print $2}')
+          account_var=$(grep "account:" env_vars_file.txt | awk '{print $2}')
+        
+          # Print the extracted values
+          echo "environment: $env_var" >> "$GITHUB_ENV"
+          echo "size: $size_var" >> "$GITHUB_ENV"
+          echo "provider: $provider_var" >> "$GITHUB_ENV"
+          echo "account: $account_var" >> "$GITHUB_ENV"
+        
+          else
+            echo "File env_vars_file.txt does not exist."
+          fi
 
       - name: Variables
         id: vars
@@ -59,9 +66,9 @@ jobs:
       
       - name: Adjust env
         run: |
-          if [ "${{ inputs.env }}" == "development" ]; then
+          if [ "${{ env.environment }}" == "development" ]; then
               ENV="dev"
-          elif [ "${{ inputs.env }}" == "production" ]; then
+          elif [ "${{ env.environment }}" == "production" ]; then
               ENV="prod"
           fi
           echo "ENV=$ENV" >> "$GITHUB_ENV"
@@ -74,7 +81,7 @@ jobs:
       - name: Update Helm
         run: |
           chmod +x deployment/scripts/update-helm-values.sh
-          ./deployment/scripts/update-helm-values.sh ${{ env.VERSION }} ${{ env.IMAGE }}  ${{ inputs.provider }} ${{ env.ENV }} ${{ inputs.size }} ${{ inputs.account }} ${{ env.CONTEXT }} ${{ github.event.repository.name }}
+          ./deployment/scripts/update-helm-values.sh ${{ env.VERSION }} ${{ env.IMAGE }}  ${{ env.provider }} ${{ env.ENV }} ${{ env.size }} ${{ env.account }} ${{ env.CONTEXT }} ${{ github.event.repository.name }}
 
       - name: Commit changes
         run: |
