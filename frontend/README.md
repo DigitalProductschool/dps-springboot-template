@@ -29,3 +29,5 @@ docker run -it --rm -v ${PWD}:/app -v /app/node_modules -p 3001:3000 -e CHOKIDAR
 > -e CHOKIDAR_USEPOLLING= true enables polling mechanism via chokidar (which wraps fs.watch, fs.watchFile, fsevents), needed for hot-reloading
 
 **Note**: Visit `http://localhost:3001` to access frontend application.
+
+**Important:** _Ensure that your AI application's server is running to enable successful api calls to the Old Photo Colorizer AI app api. If not running, start the FastAPI server following the instructions in its ai directory's README.md file._

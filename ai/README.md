@@ -1,6 +1,6 @@
 # Old Photo Colorizer📸🌈
 
-Welcome to the Old Photo Colorizer, a user-friendly Gradio app that utilizes [modelscope's](https://huggingface.co/modelscope) colorizer to breathe new life into old black and white photos. 🚀
+Welcome to the Old Photo Colorizer, a user-friendly Gradio app and an api built with FastApi that utilizes [modelscope's](https://huggingface.co/modelscope) colorizer to breathe new life into old black and white photos. 🚀
 
 ## About the model 🤖:
 
@@ -35,10 +35,20 @@ pip install -r requirements.txt
 `Step 4:` Start the gradio app server
 
 ```bash
-python app.py
+python gradio_app.py
 ```
 
-Now you can access the app at http://localhost:8000/ 🎉
+Now you can access the Gradio app at http://localhost:7860/ 🎉
+
+`Step 5:` Start the FastApi server
+
+```bash
+python fast_api.py
+```
+
+**Note:** _This step is crucial as it starts the FastAPI server, allowing you to make api calls from frontend react application._
+
+Now you can access the FastAPI docs at http://localhost:8000/docs/ 🎉
 
 ## How to Use 🎨
 

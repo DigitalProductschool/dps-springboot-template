@@ -6,3 +6,5 @@ timm==0.9.12
 opencv-python==4.9.0.80
 transformers==4.37.1
 sentencepiece==0.1.99
+fastapi==0.100.1
+uvicorn==0.23.2
