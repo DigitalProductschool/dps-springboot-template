@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import axios from "axios";
 import "./PhotoRestorerAi.css";
 
 const PhotoRestorerAi = () => {
@@ -21,18 +20,20 @@ const PhotoRestorerAi = () => {
 			const formData = new FormData();
 			formData.append("file", selectedFile);
 
-			const response = await axios.post(
-				"http://127.0.0.1:8000/restore_photo",
-				formData,
+			const response = await fetch(
+				"http://127.0.0.1:8000/ai/restore_photo",
 				{
-					headers: {
-						"Content-Type": "multipart/form-data",
-					},
-					responseType: "arraybuffer",
+					method: "POST",
+					body: formData,
 				}
 			);
 
-			const restoredImageBlob = new Blob([response.data], {
+			if (!response.ok)
+				throw new Error(`HTTP error! Status: ${response.status}`);
+
+			const restoredImageArrayBuffer = await response.arrayBuffer();
+
+			const restoredImageBlob = new Blob([restoredImageArrayBuffer], {
 				type: "image/png",
 			});
 

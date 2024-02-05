@@ -32,7 +32,7 @@ def colorize_image(image):
     _, img_bytes = cv2.imencode(".png", cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
     return img_bytes.tobytes()
 
-@app.post("/restore_photo")
+@app.post("/ai/restore_photo")
 async def restore_photo(file: UploadFile = File(...)):
     contents = await file.read()
     nparr = np.frombuffer(contents, np.uint8)
