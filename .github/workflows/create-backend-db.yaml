@@ -1,7 +1,7 @@
 name: Create Backend with postgreSQL instance
 run-name: backend-postgres
 on:
-  workflow_dispatch:
+  workflow_call:
 
 jobs:
   deploy-backend-postgres:
@@ -29,10 +29,10 @@ jobs:
           account_var=$(grep "account:" env_vars_file.txt | awk '{print $2}')
         
           # Print the extracted values
-          echo "environment: $env_var" >> "$GITHUB_ENV"
-          echo "size: $size_var" >> "$GITHUB_ENV"
-          echo "provider: $provider_var" >> "$GITHUB_ENV"
-          echo "account: $account_var" >> "$GITHUB_ENV"
+          echo "environment=$env_var" >> "$GITHUB_ENV"
+          echo "size=$size_var" >> "$GITHUB_ENV"
+          echo "provider=$provider_var" >> "$GITHUB_ENV"
+          echo "account=$account_var" >> "$GITHUB_ENV"
         
           else
             echo "File env_vars_file.txt does not exist."
