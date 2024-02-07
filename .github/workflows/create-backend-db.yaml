@@ -2,6 +2,11 @@ name: Create Backend with postgreSQL instance
 run-name: backend-postgres
 on:
   workflow_call:
+    secrets:
+      GHCR_PAT:
+        required: true
+      GH_ACTIONS_BOT_ACCESS_TOKEN:
+        required: true
 
 jobs:
   deploy-backend-postgres:
