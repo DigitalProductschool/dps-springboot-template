@@ -91,7 +91,6 @@ jobs:
       - name: Delete env vars file & workflow file
         run: |
           rm -rf env_vars_file.txt
-          rm -rf .github/workflows/setup-env-backend.yaml
           
       - name: Commit changes
         run: |
