@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 public class HelloController {
 
     @CrossOrigin
-    @GetMapping("/endpoint")
+    @GetMapping("/api/endpoint")
     public String helloGradle() {
         return "Hello Gradle from endpoint!";
     }
