@@ -52,7 +52,16 @@ spec:
           initialDelaySeconds: 90
           periodSeconds: 10
         {{- if or (.Values.db.enabled.crossplane.google) (.Values.db.enabled.crossplane.aws) (.Values.db.enabled.crossplane.azure) }}
-        env: 
+        env:
+        {{- if .Values.extraEnvVars }}
+        {{- range .Values.extraEnvVars }}
+        - name: {{ .varName }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .secretName }}
+              key: {{ .key }}
+        {{- end }}
+        {{- end }}
         - name: DB_ENDPOINT
           {{- if or (.Values.db.enabled.crossplane.aws) (.Values.db.enabled.crossplane.azure) (.Values.db.enabled.crossplane.google) }}
           valueFrom:
