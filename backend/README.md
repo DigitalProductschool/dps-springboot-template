@@ -1,5 +1,5 @@
 # Running ***locally*** 
-Inside the backend folder run: 
+Inside the backend folder run:  
 
 ```
 ./gradlew bootRun
