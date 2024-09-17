@@ -14,4 +14,8 @@ public class HelloController {
         return "Hello Gradle from endpoint!";
     }
 
+    @GetMapping("/api/prtest")
+    public String helloPRTest() {
+        return "Hello, your pull request got updated!";
+    }
 }
